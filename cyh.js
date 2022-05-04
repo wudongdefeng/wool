@@ -8,6 +8,7 @@
  * 4-30 完成 签到  , 日常视频 任务   
  * 5-1  更新逻辑
  * 5-3  增加出售100积分 , 增加支付宝提现 1 元
+ * 5-4  默认关闭出售积分 ,提现 功能 ,自行决定吧
  * 新人任务自己做做吧 很少
  * 
  * 感谢所有测试人员 
@@ -139,16 +140,16 @@ async function integral_info(timeout = 3 * 1000) {
 	let result = await httpGet(url, `积分信息`, timeout);
 	if (result.code == 0) {
 		console.log(`\n 总积分:${result.data.myIntegral} , 可出售:${result.data.convertibleIntegral} , 可提现金额:${result.data.withdrawAmount} 元 \n 当前汇率:1:${result.data.exchangeRate} , 兑换积分比例: ${result.data.buybackRatio} `);
-		if (result.data.convertibleIntegral > 100) {
-			console.log(`\n 可出售积分:${result.data.convertibleIntegral} , 尝试出售 100 积分!\n `);
-			await Sell_points();
-			await $.wait(2 * 1000);
-		}
-		if (result.data.withdrawAmount >= 1) {
-			console.log(`\n 可提现金额:${result.data.withdrawAmount} 元 , 尝试支付宝提现 1 元 !\n `);
-			await cash();
-			await $.wait(2 * 1000);
-		}
+		// if (result.data.convertibleIntegral > 100) {
+		// 	console.log(`\n 可出售积分:${result.data.convertibleIntegral} , 尝试出售 100 积分!\n `);
+		// 	await Sell_points();
+		// 	await $.wait(2 * 1000);
+		// }
+		// if (result.data.withdrawAmount >= 1) {
+		// 	console.log(`\n 可提现金额:${result.data.withdrawAmount} 元 , 尝试支付宝提现 1 元 !\n `);
+		// 	await cash();
+		// 	await $.wait(2 * 1000);
+		// }
 
 	} else {
 		console.log(`\n 积分信息: ${result.message} \n `);
