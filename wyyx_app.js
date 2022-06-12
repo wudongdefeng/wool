@@ -6,7 +6,8 @@
  *
  * cron 20 7,12  * * *  yml2213_javascript_master/wyyx_app.js
  *
- * 6-12		完成 签到 任务 (重写应该可以了)
+ * 6-12		完成 签到 浏览 前进 任务 
+ * 6-12		重写应该行了 ,抓到数据后自己关闭重写
  *
  * 感谢所有测试人员
  * ========= 青龙--配置文件 =========
@@ -36,14 +37,14 @@ let ck_status = true;
 let host = 'act.you.163.com';
 let hostname = 'https://' + host;
 //---------------------------------------------------------------------------------------------------------
-let VersionCheck = "0.0.2"
+let VersionCheck = "0.1.2"
 let Change = '增加圈x v2p兼容,自行测试吧!'
 let thank = `\n感谢 心雨 的投稿\n`
 //---------------------------------------------------------------------------------------------------------
 
 async function tips(ckArr) {
 	let Version_latest = await Version_Check('wyyx_app');
-	let Version = `\n📌 本地脚本: V 0.0.2  远程仓库脚本: V ${Version_latest}`
+	let Version = `\n📌 本地脚本: V 0.1.2  远程仓库脚本: V ${Version_latest}`
 	DoubleLog(`${Version}\n📌 🆙 更新内容: ${Change}`);
 	// DoubleLog(`${thank}`);
 	await wyy();
@@ -89,6 +90,7 @@ async function start() {
 		await point_info(2);
 
 	}
+
 }
 
 
@@ -97,17 +99,18 @@ async function start() {
 // https://act.you.163.com/act-attendance/task/list
 async function GetRewrite() {
 	if ($request.url.indexOf("act-attendance/task/list") > -1) {
-		ck = $request.headers.Cookie;
+		const ck = $request.headers.cookie;
+		console.log(ck);
 		if (ckStr) {
 			if (ckStr.indexOf(ck) == -1) {  // 找不到返回 -1
 				ckStr = ckStr + "@@" + ck;
 				$.setdata(ckStr, "wyyx_app_data");
 				ckList = ckStr.split("@@");
-				$.msg($.name + ` 获取第${ckList.length}个 ck 成功: ${ck}`);
+				$.msg($.name + ` 获取第${ckList.length}个 ck 成功: ${ck} ,请不用的 自己关闭重写!`);
 			}
 		} else {
 			$.setdata(ck, "wyyx_app_data");
-			$.msg($.name + ` 获取第1个 ck 成功: ${ck}`);
+			$.msg($.name + ` 获取第1个 ck 成功: ${ck}  ,请不用的 自己关闭重写!`);
 		}
 	}
 }
@@ -222,6 +225,7 @@ async function task_list() {
 				DoubleLog(`没有可执行的任务了 ,明天再来吧~!`);
 			}
 		}
+		await walk();
 
 	} else {
 		DoubleLog(`任务列表: 失败 ❌ 了呢,原因未知!`);
@@ -232,28 +236,23 @@ async function task_list() {
 
 
 /**
- *
  * 签到    httpGet
- * https://mc.kukahome.com/club-server/front/member/signIn
+ * https://act.you.163.com/act-attendance/att/v3/sign
  */
 async function signIn() {
 	let Options = {
-		url: `${hostname}/club-server/front/member/signIn`,
+		url: `${hostname}/act-attendance/att/v3/sign`,
 		headers: {
 			'Host': host,
-			'X-Customer': ck[0],
-			'brandCode': 'K001',
-			'content-type': 'application/json',
+			'Cookie': ck[0]
 		},
-		body: JSON.stringify({ "identityType": "mobile", "membershipId": ck[0], "customerId": customerId, "authorization": ck[1] })
 	};
 	let result = await httpGet(Options, `签到`);
 
-	console.log(result);
 	if (result.code == 200) {
 		DoubleLog(`签到: 成功 🎉`);
-	} else if (result.code == 400) {
-		DoubleLog(`签到信息: ${result.message}`);
+	} else if (result.code == 1009) {
+		DoubleLog(`签到信息: ${result.msg}`);
 	} else {
 		DoubleLog(`签到: 失败 ❌ 了呢,原因未知!`);
 		console.log(result);
@@ -262,6 +261,30 @@ async function signIn() {
 
 
 
+/**
+ * 前进    httpGet
+ */
+async function walk() {
+	let Options = {
+		url: `${hostname}/act-attendance//game/walk`,
+		headers: {
+			'Host': host,
+			'Cookie': ck[0]
+		},
+	};
+	let result = await httpGet(Options, `前进`);
+
+	if (result.code == 200) {
+		DoubleLog(`前进: 成功 🎉`);
+		await wait(5);
+		await walk();
+	} else if (result.code == 1007) {
+		DoubleLog(`前进信息: ${result.msg}`);
+	} else {
+		DoubleLog(`前进: 失败 ❌ 了呢,原因未知!`);
+		console.log(result);
+	}
+}
 
 
 
