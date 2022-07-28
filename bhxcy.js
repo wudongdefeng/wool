@@ -1,11 +1,5 @@
-/*
-渤海宣传员
-cron: 16 7,19 * * *
-
-把捉到token填到bhxcytoken里，换行或者@隔开，捉包后不要再打开小程序否则会掉CK
-*/
-const $ = new Env('渤海宣传员');
 const jsname = '渤海宣传员'
+const $ = new Env(jsname);
 
 let envSplitor = ['\n','@']
 let httpResult, httpReq, httpResp
@@ -16,7 +10,7 @@ let userList = []
 let userIdx = 0
 let userCount = 0
 
-let md5Salt = '2021hqhd08bhyh04'
+let md5Salt = '2022hqhd07bhyh05'
 let todayDay = (new Date()).getDay()
 todayDay = todayDay==0 ? 7 : todayDay
 ///////////////////////////////////////////////////////////////////
@@ -33,7 +27,7 @@ class UserInfo {
     
     async getUserInfo() {
         try {
-            let url = `https://api.yd.ihaoqu.com/?r=api2&apiAction=getUserInfo`
+            let url = `https://api.yd.ihaoqu.com/?r=api&apiAction=getUserInfo`
             let sign = MD5Encrypt(`getUserInfo${this.uid}${md5Salt}${this.token}`)
             let body = `uid=${this.uid}&token=${this.token}&signure=${sign}`
             let urlObject = populateUrlObject(url,body)
@@ -68,7 +62,7 @@ class UserInfo {
     
     async SignIn() {
         try {
-            let url = `https://api.yd.ihaoqu.com/?r=api2&apiAction=SignIn`
+            let url = `https://api.yd.ihaoqu.com/?r=api&apiAction=SignIn`
             let sign = MD5Encrypt(`${this.token}${md5Salt}${this.uid}SignIn`)
             let body = `uid=${this.uid}&token=${this.token}&signure=${sign}`
             let urlObject = populateUrlObject(url,body)
@@ -88,7 +82,7 @@ class UserInfo {
     
     async Recharge() {
         try {
-            let url = `https://api.yd.ihaoqu.com/?r=api2&apiAction=Recharge`
+            let url = `https://api.yd.ihaoqu.com/?r=api&apiAction=Recharge`
             let sign = MD5Encrypt(`Recharge${this.uid}${md5Salt}2${this.token}1`)
             let body = `uid=${this.uid}&token=${this.token}&Type=1&Category=2&signure=${sign}`
             let urlObject = populateUrlObject(url,body)
@@ -97,9 +91,10 @@ class UserInfo {
             if(!result) return
             //console.log(result)
             if(result.result==1) {
-                console.log(`兑换E卡成功: ${result.msg}`)
+                console.log(result)
+                console.log(`[${this.name}]兑换E卡成功: ${result.msg}`)
             } else {
-                console.log(`兑换E卡失败: ${result.msg}`)
+                console.log(`[${this.name}]兑换E卡失败: ${result.msg}`)
             }
         } catch(e) {
             console.log(e)
