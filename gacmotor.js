@@ -125,7 +125,7 @@ class UserInfo {
                 await this._signIn()
             }
             await this._taskList()
-            if (this.postNotFinishedNum !== 0 && this.postNotFinishedNum >= 1 || this.sharenNotFinishedNum !== 0 && this.sharenNotFinishedNum >= 1) {
+            if (this.postNotFinishedNum !== 0 && this.postNotFinishedNum >= 1 || this.commentNotFinishedNum !== 0 && this.commentNotFinishedNum >= 1) {
                 if (process.env["gacmotorPost"] == "true" || process.env["gacmotorComment"] == "true") {
                     console.log(`正在远程获取15条随机评论~请等待15-20秒`)
                     await this._getText()
@@ -154,7 +154,7 @@ class UserInfo {
 
             if (process.env["gacmotorComment"] == "true") {
                 console.log(`已设置评论功能`);
-                if (this.commentNotFinishedNum !== 0 && this.commentNotFinished >= 1) {
+                if (this.commentNotFinishedNum !== 0 && this.commentNotFinishedNum >= 1) {
                     for (let postId of this.applatestlist) {
                         await this._add(postId, this.titleList[0])
                     }
@@ -163,7 +163,7 @@ class UserInfo {
             }
 
             if (process.env["gacmotorComment"] == "true") {
-                if (this.commentNotFinishedNum !== 0 && this.commentNotFinished >= 1) {
+                if (this.commentNotFinishedNum !== 0 && this.commentNotFinishedNum >= 1) {
                     console.log(`等待15s`)
                     await $.wait(15000)
                     console.log(`检测评论列表`);
