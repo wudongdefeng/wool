@@ -13,7 +13,10 @@
  * 答题活动(非必填,不填默认不执行)       需要在appToken & deviceCode & registrationID 后加一个 & mallToken
  *                此 malltoken 需要手动获取(微信打开https://mall.gacmotor.com/act/answer-activity?id=464)
  *                抓包https://mall.gacmotor.com/e-small-bff/fronted/activityAnswer/queryAnswerActivityInfo Headers中的token
- *                这个就是mallToken
+ *                这个就是mallToken  
+ * 注意！使用WOOL WEB获取的CK不需要抓mallToken 也不需要填写
+ * 使用WOOL WEB 广汽传祺V2接口获取的CK 无需设置哦
+ *               
  * 
  */
 
@@ -32,7 +35,7 @@ class UserInfo {
         this.ckStatus = true;
         this.deviceCode = str.split(strSplitor)[1];
         this.registrationID = str.split(strSplitor)[2];
-        this.mallToken = str.split(strSplitor)[3];
+        this.mallToken = str.split(strSplitor)[3];;
         this.signInStatus = false//默认签到状态false
         this.userIdStr = ""
         this.name = ""
@@ -202,7 +205,8 @@ class UserInfo {
             }
         }
         if (this.mallToken !== undefined) {
-            console.log(`已填写微信广汽传祺Token 执行答题&抽奖`);
+            this.mallToken = `DS-${this.ck}`
+            console.log(`执行答题&抽奖 并且尝试获取mallToken(如果不是WoolWeb获取的变量 可能执行失败)`);
             //获取答题活动列表
             await this._question_list({ "activityId": 464 })
             if (this.questionTaskId !== "") {
@@ -211,29 +215,20 @@ class UserInfo {
                 //答题
                 await this._submit_answer({ "activityId": 464, "taskId": this.questionTaskId, "userSubmitAnswerVoList": [{ "questionId": this.questionId, "userAnswer": this.userAnswer, "answerIdList": this.answerIdList }] })
                 //抽奖
-                await this._activity_lotter_mall({ "activityId": "465", "channel": "wx_channel" })
-                console.log(`目测30天内自动到账`)
-                //console.log(`请微信打开链接截图中奖记录 发给客服登记G豆  https://mall.gacmotor.com/act/turntable?id=465&channelCode=`);
-                //console.log(`加客服的地址 https://mall.gacmotor.com/act/answer-activity?id=464`);
+                let lotterId = "465"
+                if (this.questionTaskId == 8) {
+                    lotterId = "484"
+                }
+                await this._activity_lotter_mall({ "activityId": lotterId, "channel": "wx_channel" })
+                //console.log(`目测30天内自动到账`)
+                console.log(`请微信打开链接截查看中奖规则  https://mall.gacmotor.com/act/turntable?id=${lotterId}`);
+                console.log(`加客服的地址 https://mall.gacmotor.com/act/answer-activity?id=464`);
             } else {
                 console.log(`本周答题完成或未到活动时间`);
             }
-            //
-            /*if (1700755199000 > this.BeiJingTime && this.BeiJingTime > 1700150400000) {
-                this.questionTaskId = 7
-            } else if (1701359999000 > this.BeiJingTime && this.BeiJingTime > 1700755200000) {
-                this.questionTaskId = 8
-            } else if (1701964799000 > this.BeiJingTime && this.BeiJingTime > 1701360000000) {
-                this.questionTaskId = 9
-            } else if (1701964800000 > this.BeiJingTime && this.BeiJingTime > 1702569599000) {
-                this.questionTaskId = 10
-            } else if (1702569600000 > this.BeiJingTime && this.BeiJingTime > 1703174399000) {
-                this.questionTaskId = 11
-            } else if (1703174400000 > this.BeiJingTime && this.BeiJingTime > 1703779199000) {
-                this.questionTaskId = 12
-            }*/
-
         }
+
+
     }
     _MD5(str) {
         const crypto = require("crypto");
