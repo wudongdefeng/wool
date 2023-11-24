@@ -139,8 +139,8 @@ class UserInfo {
                 console.log(`已设置发帖功能`);
                 if (this.postNotFinishedNum !== 0 && this.postNotFinishedNum >= 1) {
                     await this._post(this.titleList[0], this.contentList[0])//可能需要图片
-                    console.log(`等待30s`)
-                    await $.wait(30000)
+                    console.log(`等待15s`)
+                    await $.wait(15000)
                     await this._postlist()
                     for (let postId of this.postList) {
                         await this._delete(postId)
@@ -204,7 +204,7 @@ class UserInfo {
 
             }
         }
-        if (this.mallToken !== undefined) {
+        if (this.mallToken == undefined) {
             this.mallToken = `DS-${this.ck}`
             console.log(`执行答题&抽奖 并且尝试获取mallToken(如果不是WoolWeb获取的变量 可能执行失败)`);
             //获取答题活动列表
