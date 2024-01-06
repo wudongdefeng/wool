@@ -127,6 +127,7 @@ class UserInfo {
                 url: `https://beijing-gateway-customer.app-prod.bjev.com.cn/beijing-zone-member/userCustomer/getUserInfo?buildVersion=138&uuid_check=${this.get_uuid()}`,
             }
             options.headers = this.get_headers(options.method, options.url)
+            //console.log(options);
             let { body: result } = await httpRequest(options);
             //console.log(options);
             result = JSON.parse(result);
@@ -311,24 +312,23 @@ class UserInfo {
         let params = url.split('?')[1].split('&').sort().join("").toLowerCase()
         method = method.toUpperCase();
         let timestamp = new Date().getTime()
-        const key = `96189e76b405f63f8460367ab2ec74ac`
+        const key = `162e31f57f928bb34df22f99f04875de`
         let str
         if (method == "POST") {
-            str = `${method}${path}ice-auth-appkey:5795393720ice-auth-timestamp:${timestamp}json=${body}${params}${key}`
+            str = `${method}${path}ice-auth-appkey:6164883796ice-auth-timestamp:${timestamp}json=${body}${params}${key}`
         } else {
-            str = `${method}${path}ice-auth-appkey:5795393720ice-auth-timestamp:${timestamp}${params}${key}`
+            str = `${method}${path}ice-auth-appkey:6164883796ice-auth-timestamp:${timestamp}${params}${key}`
 
-        }
-        const sign = this.sha256(encodeURIComponent(str))
+        }        const sign = this.sha256(encodeURIComponent(str))
         return {
             "Content-Type": "application/json;charset=UTF-8",
-            "User-Agent": "(Android 10; Xiaomi MI 8 Lite Build/V12.0.1.0.QDTCNXM 3.11.1 138 release bjApp baic-app-android)",
-            "versionInfo": "(Android 10; Xiaomi MI 8 Lite Build/V12.0.1.0.QDTCNXM 3.11.1 138 release bjApp baic-app-android)",
+            "User-Agent": "(Android 10; Xiaomi MI 8 Lite Build/V12.0.1.0.QDTCNXM 3.13.1 138 release bjApp baic-app-android)",
+            "versionInfo": "(Android 10; Xiaomi MI 8 Lite Build/V12.0.1.0.QDTCNXM 3.13.1 138 release bjApp baic-app-android)",
             "Cache-Control": "no-cache",
             "Authorization": `Bearer ` + this.ck,
             //"userId": "",
-            "appKey": 5795393720,
-            "ice-auth-appkey": 5795393720,
+            "appKey": 6164883796,
+            "ice-auth-appkey": 6164883796,
             "ice-auth-timestamp": timestamp,
             "ice-auth-sign": sign,
             "Content-Type": "application/json;charset=UTF-8",
@@ -374,7 +374,7 @@ async function start() {
  * @returns
  */
 async function checkEnv() {
-    let userCookie = ($.isNode() ? process.env[ckName] : $.getdata(ckName)) || "";
+  let userCookie = ($.isNode() ? process.env[ckName] : $.getdata(ckName)) || "";
     if (userCookie) {
         let e = envSplitor[0];
         for (let o of envSplitor)
