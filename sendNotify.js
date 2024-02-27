@@ -13,6 +13,13 @@
 const querystring = require('querystring');
 const $ = new Env();
 const timeout = 15000; //超时时间(单位毫秒)
+// =======================================gotify通知设置区域==============================================
+//gotify_url 填写gotify地址,如https://push.example.de:8080
+//gotify_token 填写gotify的消息应用token
+//gotify_priority 填写推送消息优先级,默认为0
+let GOTIFY_URL = '';
+let GOTIFY_TOKEN = '';
+let GOTIFY_PRIORITY = 0;
 // =======================================go-cqhttp通知设置区域===========================================
 //gobot_url 填写请求地址http://127.0.0.1/send_private_msg
 //gobot_token 填写在go-cqhttp文件设置的访问密钥
@@ -76,6 +83,11 @@ let QYWX_AM = '';
 //此处填您iGot的信息(推送key，例如：https://push.hellyw.com/XXXXXXXX)
 let IGOT_PUSH_KEY = '';
 
+// =======================================飞书机器人设置区域=======================================
+// 官方文档：https://www.feishu.cn/hc/zh-CN/articles/360024984973
+// FSKEY 飞书机器人的 FSKEY
+let FSKEY = '';
+
 // =======================================push+设置区域=======================================
 //官方文档：http://www.pushplus.plus/
 //PUSH_PLUS_TOKEN：微信扫码登录后一对一推送或一对多推送下面的token(您的Token)，不提供PUSH_PLUS_USER则默认为一对一推送
@@ -84,6 +96,16 @@ let PUSH_PLUS_TOKEN = '';
 let PUSH_PLUS_USER = '';
 
 //==========================云端环境变量的判断与接收=========================
+if (process.env.GOTIFY_URL) {
+  GOTIFY_URL = process.env.GOTIFY_URL;
+}
+if (process.env.GOTIFY_TOKEN) {
+  GOTIFY_TOKEN = process.env.GOTIFY_TOKEN;
+}
+if (process.env.GOTIFY_PRIORITY) {
+  GOTIFY_PRIORITY = process.env.GOTIFY_PRIORITY;
+}
+
 if (process.env.GOBOT_URL) {
   GOBOT_URL = process.env.GOBOT_URL;
 }
@@ -182,7 +204,7 @@ async function sendNotify(
   text,
   desp,
   params = {},
-  author = `\n\n本通知 By：https://github.com/leafTheFish/DeathNote\n通知时间：${new Date()}`,
+  author = '\n\n本仓库脚本仅用于学习，请勿用于商业用途！\n\ntg频道 ：https://t.me/+MmaqAfh4_dIwZjBl',
 ) {
   //提供6种通知
   desp += author; //增加作者信息，防止被贩卖等
@@ -199,8 +221,53 @@ async function sendNotify(
     qywxBotNotify(text, desp), //企业微信机器人
     qywxamNotify(text, desp), //企业微信应用消息推送
     iGotNotify(text, desp, params), //iGot
+    fsBotNotify(text, desp), // 飞书机器人
     gobotNotify(text, desp),//go-cqhttp
+    gotifyNotify(text, desp),//gotify
   ]);
+   if (desp.indexOf('已可领取') > -1 || desp.indexOf('此ip已被限制') > -1 || desp.indexOf('IP') > -1 || desp.indexOf('ip') > -1 || desp.indexOf('填写收货地址') > -1 || desp.indexOf('用户未登录') > -1 || desp.indexOf('可免费领取') > -1 || desp.match(/100.0[0-9]%/))
+  {
+    QYWX_AM = process.env.QYWX_AM2;
+    await Promise.all([
+      qywxamNotify(text, desp), //企业微信应用消息推送
+    ])
+    QYWX_AM = '';
+  }
+}
+
+function gotifyNotify(text, desp) {
+  return new Promise((resolve) => {
+    if (GOTIFY_URL && GOTIFY_TOKEN) {
+      const options = {
+        url: `${GOTIFY_URL}/message?token=${GOTIFY_TOKEN}`,
+        body: `title=${encodeURIComponent(text)}&message=${encodeURIComponent(desp)}&priority=${GOTIFY_PRIORITY}`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      };
+      $.post(options, (err, resp, data) => {
+        try {
+          if (err) {
+            console.log('gotify发送通知调用API失败！！\n');
+            console.log(err);
+          } else {
+            data = JSON.parse(data);
+            if (data.id) {
+              console.log('gotify发送通知消息成功🎉\n');
+            } else {
+              console.log(`${data.message}\n`);
+            }
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve();
+        }
+      });
+    } else {
+      resolve();
+    }
+  });
 }
 
 function gobotNotify(text, desp, time = 2100) {
@@ -408,57 +475,61 @@ function BarkNotify(text, desp, params = {}) {
 }
 
 function tgBotNotify(text, desp) {
-  return new Promise((resolve) => {
-    if (TG_BOT_TOKEN && TG_USER_ID) {
-      const options = {
-        url: `https://${TG_API_HOST}/bot${TG_BOT_TOKEN}/sendMessage`,
-        body: `chat_id=${TG_USER_ID}&text=${text}\n\n${desp}&disable_web_page_preview=true`,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        timeout,
-      };
-      if (TG_PROXY_HOST && TG_PROXY_PORT) {
-        const tunnel = require('tunnel');
-        const agent = {
-          https: tunnel.httpsOverHttp({
-            proxy: {
-              host: TG_PROXY_HOST,
-              port: TG_PROXY_PORT * 1,
-              proxyAuth: TG_PROXY_AUTH,
-            },
-          }),
-        };
-        Object.assign(options, { agent });
-      }
-      $.post(options, (err, resp, data) => {
-        try {
-          if (err) {
-            console.log('telegram发送通知消息失败！！\n');
-            console.log(err);
-          } else {
-            data = JSON.parse(data);
-            if (data.ok) {
-              console.log('Telegram发送通知消息成功🎉。\n');
-            } else if (data.error_code === 400) {
-              console.log(
-                '请主动给bot发送一条消息并检查接收用户ID是否正确。\n',
-              );
-            } else if (data.error_code === 401) {
-              console.log('Telegram bot token 填写错误。\n');
+    return new Promise(resolve => {
+        if (TG_BOT_TOKEN && TG_USER_ID) {
+            const options = {
+                url: `https://${TG_API_HOST}/bot${TG_BOT_TOKEN}/sendMessage`,
+                json: {
+                    chat_id: `${TG_USER_ID}`,
+                    text: `${text}\n\n${desp}`,
+                    disable_web_page_preview:true,
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout
             }
-          }
-        } catch (e) {
-          $.logErr(e, resp);
-        } finally {
-          resolve(data);
+            if (TG_PROXY_HOST && TG_PROXY_PORT) {
+                const tunnel = require("tunnel");
+                const agent = {
+                    https: tunnel.httpsOverHttp({
+                        proxy: {
+                            host: TG_PROXY_HOST,
+                            port: TG_PROXY_PORT * 1,
+                            proxyAuth: TG_PROXY_AUTH
+                        }
+                    })
+                }
+                Object.assign(options, {agent})
+            }
+            $.post(options, (err, resp, data) => {
+                try {
+                    if (err) {
+                        console.log('telegram发送通知消息失败！！\n')
+                        console.log(err);
+                    } else {
+                        data = JSON.parse(data);
+                        if (data.ok) {
+                            console.log('Telegram发送通知消息成功�。\n')
+                        } else if (data.error_code === 400) {
+                            console.log('请主动给bot发送一条消息并检查接收用户ID是否正确。\n')
+                        } else if (data.error_code === 401) {
+                            console.log('Telegram bot token 填写错误。\n')
+                        }
+                    }
+                } catch (e) {
+                    $.logErr(e, resp);
+                } finally {
+                    resolve(data);
+                }
+            })
+        } else {
+            resolve()
         }
-      });
-    } else {
-      resolve();
-    }
-  });
+    })
 }
+
+
 function ddBotNotify(text, desp) {
   return new Promise((resolve) => {
     const options = {
@@ -673,8 +744,8 @@ function qywxamNotify(text, desp) {
             if (err) {
               console.log(
                 '成员ID:' +
-                  ChangeUserId(desp) +
-                  '企业微信应用消息发送通知消息失败！！\n',
+                ChangeUserId(desp) +
+                '企业微信应用消息发送通知消息失败！！\n',
               );
               console.log(err);
             } else {
@@ -682,8 +753,8 @@ function qywxamNotify(text, desp) {
               if (data.errcode === 0) {
                 console.log(
                   '成员ID:' +
-                    ChangeUserId(desp) +
-                    '企业微信应用消息发送通知消息成功🎉。\n',
+                  ChangeUserId(desp) +
+                  '企业微信应用消息发送通知消息成功🎉。\n',
                 );
               } else {
                 console.log(`${data.errmsg}\n`);
@@ -731,6 +802,42 @@ function iGotNotify(text, desp, params = {}) {
               console.log('iGot发送通知消息成功🎉\n');
             } else {
               console.log(`iGot发送通知消息失败：${data.errMsg}\n`);
+            }
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve(data);
+        }
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+function fsBotNotify(text, desp) {
+  return new Promise((resolve) => {
+    if (FSKEY) {
+      const options = {
+        url: `https://open.feishu.cn/open-apis/bot/v2/hook/${FSKEY}`,
+        json: { msg_type: 'text', content: { text: `${text}\n\n${desp}` } },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout,
+      };
+      $.post(options, (err, resp, data) => {
+        try {
+          if (err) {
+            console.log('发送通知调用API失败！！\n');
+            console.log(err);
+          } else {
+            data = JSON.parse(data);
+            if (data.StatusCode === 0) {
+              console.log('飞书发送通知消息成功🎉\n');
+            } else {
+              console.log(`${data.msg}\n`);
             }
           }
         } catch (e) {
