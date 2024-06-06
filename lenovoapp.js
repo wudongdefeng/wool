@@ -24,7 +24,7 @@ class Task {
     async main() {
         await this.userInfo()
         if (this.ckStatus) {
-            await this.isSignIn()
+            await this.checkIn()
             await this.getUserTaskList();
         }
 
@@ -39,11 +39,11 @@ class Task {
         } else {
             $.log(`❌账号[${this.index}]  获取用户状态失败`);
             this.ckStatus = false
-            //console.log(result);
+            console.log(result);
         }
     }
     async isSignIn() {
-        let result = await this.taskRequest({ method: "POST", url: `https://mmembership.lenovo.com.cn/member-hp-task-center/v1/task/getCheckInList?lenovoId=10219183246` })
+        let result = await this.taskRequest({ method: "POST", url: `https://mmembership.lenovo.com.cn/member-hp-task-center/v1/task/getCheckInList?lenovoId=${this.ck}` })
         //console.log(result);
         if (result.code == "0") {
             if (result.data.flag == !1) {
@@ -53,17 +53,17 @@ class Task {
             }
         } else {
             $.log(`❌账号[${this.index}]  获取签到状态`);
-            //console.log(result);
+            console.log(result);
         }
     }
     async checkIn() {
-        let result = await this.taskRequest({ method: "POST", url: `https://mmembership.lenovo.com.cn/member-hp-task-center/v1/task/checkIn?lenovoId=10219183246&OSType=10011` })
+        let result = await this.taskRequest({ method: "POST", url: `https://mmembership.lenovo.com.cn/member-hp-task-center/v1/task/checkIn?lenovoId=${this.ck}&OSType=10011` })
         //console.log(result);
         if (result.code == "0") {
             $.log(`✅账号[${this.index}]  签到成功🎉`)
         } else {
             $.log(`❌账号[${this.index}]  签到失败`);
-            //console.log(result);
+            console.log(result);
         }
     }
     async getUserTaskList() {
@@ -81,7 +81,7 @@ class Task {
             }
         } else {
             $.log(`❌账号[${this.index}]  获取任务列表失败`);
-            //console.log(result);
+            console.log(result);
         }
     }
     async doTask(id) {
