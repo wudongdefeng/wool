@@ -1,10 +1,10 @@
 /*
 [task_local]
-# 拼多多果园-小程序
-15 8 * * * pddFruit.js, tag=拼多多果园-小程序, enabled=true
+# 拼多多果园
+15 8 * * * pddFruit.js, tag=拼多多果园, enabled=true
 搜mobile.yangkeduo.com，请求头的AccessToken，设置ddgyck 多账号@分割 
 */
-const $ = new Env('拼多多果园-小程序');
+const $ = new Env('拼多多果园');
 // const notify = $.isNode() ? require('./sendNotifySp') : '';
 $.shareWids = []
 $.lackCardIds = []
