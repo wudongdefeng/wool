@@ -1,10 +1,12 @@
 /*
 ------------------------------------------
-@Author: sm
-@Date: 2024.06.07 19:15
-@Description: 测试
+@ cron: 5 * * * *
+@Author: smallfawn
+
 ------------------------------------------
-#Notice:
+#Notice: 每小时运行一次 ⚠️
+CK 名字 kuaishou_speed_openbox
+值: COOKIE#开宝箱sig3 多账号&连接
 ⚠️【免责声明】
 ------------------------------------------
 1、此脚本仅用于学习研究，不保证其合法性、准确性、有效性，请根据情况自行判断，本人对此不承担任何保证责任。
@@ -16,11 +18,11 @@
 7、所有直接或间接使用、查看此脚本的人均应该仔细阅读此声明。本人保留随时更改或补充此声明的权利。一旦您使用或复制了此脚本，即视为您已接受此免责声明。
 */
 
-const $ = new Env("蔚来");
-let ckName = `testA`;
+const $ = new Env("快手极速版开宝箱");
+let ckName = `kuaishou_speed_openbox`;
+
 const strSplitor = "#";
 const envSplitor = ["&", "\n"];
-process.env[ckName] = "testA#testB&testC#testD"
 const notify = $.isNode() ? require("./sendNotify") : "";
 const axios = require("axios");
 const defaultUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.31(0x18001e31) NetType/WIFI Language/zh_CN miniProgram"
@@ -36,16 +38,54 @@ class Task extends Public {
         super();
         this.index = $.userIdx++
         let user = env.split("#");
-        this.name = user[0];
-        this.passwd = user[1];
+        this.cookkie = user[0];
+        this.sig3_openbox = user[1]
+        console.log()
     }
 
+    async openbox() {
+        let data = JSON.stringify({});
+
+
+
+        $.log(`快手开宝箱  每小时运行一次`)
+
+
+        let options = {
+            method: 'POST',
+            url: `https://nebula.kuaishou.com/rest/wd/encourage/unionTask/treasureBox/report?__NS_sig3=${this.sig3_openbox}&sigCatVer=1`,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; MI 8 Lite Build/QKQ1.190910.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/90.0.4430.226 KsWebView/1.8.90.770 (rel;r) Mobile Safari/537.36 Yoda/3.2.9-rc6 ksNebula/12.11.40.9331 OS_PRO_BIT/64 MAX_PHY_MEM/5724 KDT/PHONE AZPREFIX/az3 ICFO/0 StatusHT/29 TitleHT/44 NetType/WIFI ISLP/0 ISDM/0 ISLB/0 locale/zh-cn DPS/4.036 DPP/13 SHP/2068 SWP/1080 SD/2.75 CT/0 ISLM/0',
+                'Accept-Encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+                'Origin': 'https://nebula.kuaishou.com',
+                'X-Requested-With': 'com.kuaishou.nebula',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Dest': 'empty',
+                'Referer': 'https://nebula.kuaishou.com/nebula/task/earning?layoutType=4&hyId=nebula_earning_ug_cdn&source=bottom_guide_second',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cookie': '' + this.cookkie
+            },
+            data: data
+        };
+
+
+        try {
+            let { data: res } = await this.request(options);
+            $.log(res);
+
+        } catch (e) {
+            console.log(e)
+        }
+
+    }
 
     async run() {
 
 
+        await this.openbox()
 
-        console.log(this.index);
 
     }
 }
