@@ -102,20 +102,17 @@ function Env(t, s) {
         }
         async sendMsg() {
             this.log("==============📣Center 通知📣==============")
-            for (let item of this.notifyStr) {
-                if (Object.prototype.toString.call(item) === '[object Object]') {
-                    item = JSON.stringify(item)
-                }
-                if (Object.prototype.toString.call(arg) === '[object Array]') {
-                    item = JSON.stringify(item)
+            for (let i = 0; i < this.notifyStr.length; i++) {
+                if (Object.prototype.toString.call(this.notifyStr[i]) === '[object Object]' ||
+                    Object.prototype.toString.call(this.notifyStr[i]) === '[object Array]') {
+                    this.notifyStr[i] = JSON.stringify(this.notifyStr[i]);
                 }
             }
+
             let message = this.notifyStr.join(this.logSeparator);
             if (this.isNode()) {
-
                 await notify.sendNotify(this.name, message);
             } else {
-
             }
         }
         isNode() {
@@ -217,8 +214,8 @@ function Env(t, s) {
         wait(t) {
             return new Promise((s) => setTimeout(s, t));
         }
-        done(t = {}) {
-            this.sendMsg();
+        async done(t = {}) {
+            await this.sendMsg();
             const s = new Date().getTime(),
                 e = (s - this.startTime) / 1e3;
             this.log(
