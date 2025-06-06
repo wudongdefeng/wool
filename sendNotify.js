@@ -640,21 +640,37 @@ function qywxBotNotify(text, desp) {
 
 function ChangeUserId(desp) {
   const QYWX_AM_AY = QYWX_AM.split(',');
-  if (QYWX_AM_AY[2]) {
+  const USERIDS = process.env.USERIDS || "";
+  const USERIDS2 = process.env.USERIDS2 || "";
+  let userId; // 最终返回的userId
+
+  // 1. 优先处理USERIDS2匹配逻辑
+  const userIdsArray = USERIDS.split('&');
+  const userIds2Array = USERIDS2.split('&');
+  for (let i = 0; i < userIds2Array.length; i++) {
+    if (desp.includes(userIds2Array[i])) {
+      userId = userIdsArray[i]; // 匹配时赋值
+      break; // 找到第一个匹配即停止
+    }
+  }
+
+  // 2. 无USERIDS2匹配时执行原始逻辑
+  if (!userId && QYWX_AM_AY[2]) {
     const userIdTmp = QYWX_AM_AY[2].split('|');
-    let userId = '';
     for (let i = 0; i < userIdTmp.length; i++) {
       const count = '账号' + (i + 1);
       const count2 = '签到号 ' + (i + 1);
-      if (desp.match(count2)) {
+      if (desp.match(count2) || desp.match(count)) {
         userId = userIdTmp[i];
+        break; // 找到第一个匹配即停止
       }
     }
+    // 原始逻辑的默认值
     if (!userId) userId = QYWX_AM_AY[2];
-    return userId;
-  } else {
-    return '@all';
   }
+
+  // 3. 最终兜底逻辑
+  return userId || '@all';
 }
 
 function qywxamNotify(text, desp) {
@@ -729,7 +745,7 @@ function qywxamNotify(text, desp) {
         options = {
           url: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${accesstoken}`,
           json: {
-            touser: `${ChangeUserId(desp)}`,
+            touser: `${ChangeUserId(desp)}`,       
             agentid: `${QYWX_AM_AY[3]}`,
             safe: '0',
             ...options,
